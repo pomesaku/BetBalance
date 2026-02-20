@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>秒速・資金配分ツール [究極版]</title>
+    <style>
+        body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; background: #f4f7f6; color: #333; max-width: 600px; margin: 0 auto; padding: 20px; }
+        h1 { font-size: 1.3rem; text-align: center; color: #d32f2f; margin-bottom: 5px;}
+        p.subtitle { text-align: center; font-size: 0.85rem; color: #666; margin-bottom: 20px; }
+        .card { background: #fff; padding: 20px; border-radius: 8px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); margin-bottom: 20px;}
+        label { font-weight: bold; font-size: 0.95rem; color: #444; display: block; margin-bottom: 5px;}
+        input[type="number"] { width: 100%; padding: 12px; margin-bottom: 15px; border: 2px solid #ddd; border-radius: 6px; font-size: 18px; box-sizing: border-box; background: #fafafa; font-weight: bold;}
+        textarea { width: 100%; height: 160px; padding: 12px; margin-bottom: 15px; border: 2px solid #ddd; border-radius: 6px; font-size: 15px; box-sizing: border-box; background: #fafafa; resize: vertical; line-height: 1.5; color: #333;}
+        textarea::placeholder { color: #999; }
+        textarea:focus, input[type="number"]:focus { border-color: #d32f2f; outline: none; }
+        button { background: #d32f2f; color: white; border: none; padding: 16px; width: 100%; border-radius: 6px; font-size: 18px; font-weight: bold; cursor: pointer; transition: 0.2s; box-shadow: 0 4px 0 #b71c1c;}
+        button:active { transform: translateY(4px); box-shadow: none; }
+        .notice { font-size: 0.8rem; color: #d32f2f; margin-bottom: 15px; font-weight: bold;}
+        table { width: 100%; border-collapse: collapse; margin-top: 15px; font-size: 0.95rem;}
+        th, td { padding: 10px 5px; text-align: right; border-bottom: 1px solid #ddd; }
+        th { background: #f8f8f8; color: #555; font-weight: normal; font-size: 0.85rem;}
+        td.bet-name { text-align: left; font-weight: bold; color: #555; font-size: 0.9rem;}
+        td.buy-amount { color: #d32f2f; font-weight: bold; font-size: 1.1rem;}
+        .summary { display: flex; justify-content: space-between; background: #fff3f3; padding: 15px; border-radius: 6px; border: 1px solid #ffcdd2; margin-bottom: 15px;}
+        .summary div { text-align: center; }
+        .summary span { display: block; font-size: 1.3rem; font-weight: bold; color: #d32f2f; margin-top: 5px;}
+    </style>
+</head>
+<body>
+    <h1>🔥 秒速・資金配分ツール</h1>
+    <p class="subtitle">オッズをコピペするだけで一瞬で最適化</p>
+    
+    <div class="card">
+        <label>総予算 (円):</label>
+        <input type="number" id="budget" value="10000" step="100">
+        
+        <label>オッズ表をそのままペースト:</label>
+        <p style="font-size:0.8rem; color:#666; margin-top:0;">※買い目とオッズを自動で判別します。</p>
+        <textarea id="bulk-odds" placeholder="【入力例】&#10;1-2-3 150.5倍&#10;2-4-1 49&#10;単勝 7 4.5倍"></textarea>
+        
+        <p class="notice" id="save-notice">✔️ 入力内容は自動保存されています</p>
+        <button onclick="calculate()">一発計算 (抽出＆配分)</button>
+    </div>
+
+    <div class="card" id="result-card" style="display:none;">
+        <div class="summary">
+            <div>実際の購入額<br><span id="actual-total">0</span></div>
+            <div>平均払戻見込<br><span id="avg-return">0</span></div>
+        </div>
+        <table id="result-table">
+            </table>
+    </div>
+
+    <script>
+        const budgetInput = document.getElementById('budget');
+        const bulkOddsInput = document.getElementById('bulk-odds');
+
+        window.onload = () => {
+            if(localStorage.getItem('savedBudget')) budgetInput.value = localStorage.getItem('savedBudget');
+            if(localStorage.getItem('savedOdds')) bulkOddsInput.value = localStorage.getItem('savedOdds');
+        };
+
+        budgetInput.addEventListener('input', () => localStorage.setItem('savedBudget', budgetInput.value));
+        bulkOddsInput.addEventListener('input', () => localStorage.setItem('savedOdds', bulkOddsInput.value));
+
+        function calculate() {
+            const budget = parseFloat(budgetInput.value);
+            const rawText = bulkOddsInput.value;
+
+            if (!rawText || !budget) {
+                alert("予算とオッズを入力してください。");
+                return;
+            }
+
+            let betsList = [];
+            const lines = rawText.split('\n');
+            
+            lines.forEach(line => {
+                if (!line.trim()) return; // 空行は無視
+
+                // オッズを特定するための処理
+                let cleanLine = line.replace(/\d+(-\d+)+/g, ' '); // 馬番(1-2等)を一旦消す
+                cleanLine = cleanLine.replace(/[\(\[\<]\d+[\)\]\>]/g, ' ');
+                const matches = cleanLine.match(/\d+(?:\.\d+)?/g);
+                
+                if (matches) {
+                    const oddsStr = matches[matches.length - 1]; // 一番後ろの数字をオッズとする
+                    const extractedOdds = parseFloat(oddsStr);
+                    
+                    if(extractedOdds > 0) {
+                        // 元の行からオッズの文字列と「倍」などを取り除き、買い目名にする
+                        let lastIndex = line.lastIndexOf(oddsStr);
+                        let betName = line;
+                        if (lastIndex !== -1) {
+                            betName = line.substring(0, lastIndex) + line.substring(lastIndex + oddsStr.length);
+                        }
+                        betName = betName.replace(/倍/g, '').replace(/円/g, '').trim();
+                        if (!betName) betName = "指定なし"; // 数字しか入力されなかった場合
+
+                        betsList.push({ name: betName, odds: extractedOdds });
+                    }
+                }
+            });
+
+            if (betsList.length === 0) {
+                alert("オッズが見つかりません。");
+                return;
+            }
+
+            // オッズが高い順（または買い目順）に並べ替え可能ですが、今回はオッズの降順にします
+            betsList.sort((a, b) => b.odds - a.odds);
+            
+            let sumInverse = 0;
+            betsList.forEach(bet => { sumInverse += (1 / bet.odds); });
+
+            const targetReturn = budget / sumInverse;
+            let tableHTML = '<tr><th style="text-align:left;">買い目</th><th>オッズ</th><th>購入額(円)</th><th>払戻見込</th></tr>';
+            let actualTotal = 0;
+            let totalReturn = 0;
+
+            betsList.forEach(bet => {
+                let rawStake = targetReturn / bet.odds;
+                let stake = Math.round(rawStake / 100) * 100;
+                if(stake === 0) stake = 100; 
+                
+                actualTotal += stake;
+                let expectedReturn = Math.floor(stake * bet.odds);
+                totalReturn += expectedReturn;
+                
+                tableHTML += `<tr>
+                    <td class="bet-name">${bet.name}</td>
+                    <td>${bet.odds}</td>
+                    <td class="buy-amount">${stake.toLocaleString()}</td>
+                    <td>${expectedReturn.toLocaleString()}</td>
+                </tr>`;
+            });
+
+            document.getElementById('actual-total').innerText = actualTotal.toLocaleString() + "円";
+            document.getElementById('avg-return').innerText = Math.floor(totalReturn / betsList.length).toLocaleString() + "円";
+            document.getElementById('result-table').innerHTML = tableHTML;
+            document.getElementById('result-card').style.display = 'block';
+            document.getElementById('result-card').scrollIntoView({ behavior: 'smooth' });
+        }
+    </script>
+</body>
+</html>
