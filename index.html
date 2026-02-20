@@ -14,8 +14,8 @@
         textarea { width: 100%; height: 160px; padding: 12px; margin-bottom: 15px; border: 2px solid #ddd; border-radius: 6px; font-size: 15px; box-sizing: border-box; background: #fafafa; resize: vertical; line-height: 1.5; color: #333;}
         textarea::placeholder { color: #999; }
         textarea:focus, input[type="number"]:focus { border-color: #d32f2f; outline: none; }
-        button { background: #d32f2f; color: white; border: none; padding: 16px; width: 100%; border-radius: 6px; font-size: 18px; font-weight: bold; cursor: pointer; transition: 0.2s; box-shadow: 0 4px 0 #b71c1c;}
-        button:active { transform: translateY(4px); box-shadow: none; }
+        button.calc-btn { background: #d32f2f; color: white; border: none; padding: 16px; width: 100%; border-radius: 6px; font-size: 18px; font-weight: bold; cursor: pointer; transition: 0.2s; box-shadow: 0 4px 0 #b71c1c;}
+        button.calc-btn:active { transform: translateY(4px); box-shadow: none; }
         .notice { font-size: 0.8rem; color: #d32f2f; margin-bottom: 15px; font-weight: bold;}
         table { width: 100%; border-collapse: collapse; margin-top: 15px; font-size: 0.95rem;}
         th, td { padding: 10px 5px; text-align: right; border-bottom: 1px solid #ddd; }
@@ -25,6 +25,17 @@
         .summary { display: flex; justify-content: space-between; background: #fff3f3; padding: 15px; border-radius: 6px; border: 1px solid #ffcdd2; margin-bottom: 15px;}
         .summary div { text-align: center; }
         .summary span { display: block; font-size: 1.3rem; font-weight: bold; color: #d32f2f; margin-top: 5px;}
+        
+        /* --- 広告用のずるいCSS --- */
+        .ad-box { margin-top: 25px; padding: 15px; background: #fdfbf2; border: 2px dashed #e6c86e; border-radius: 8px; text-align: center; }
+        .ad-copy { font-size: 0.9rem; color: #947100; font-weight: bold; margin-top: 0; margin-bottom: 10px; }
+        
+        /* DMMテキストリンクを立体ボタン化する魔法 */
+        .dmm-btn a { display: block; background: #ff9800; color: white; padding: 14px; border-radius: 6px; text-decoration: none; font-weight: bold; font-size: 1.1rem; box-shadow: 0 4px 0 #e65100; transition: 0.2s; }
+        .dmm-btn a:active { transform: translateY(4px); box-shadow: none; }
+        
+        /* ABEMAバナーをスマホ幅に自動調整 */
+        .abema-banner img { max-width: 100%; height: auto; border-radius: 6px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
     </style>
 </head>
 <body>
@@ -40,7 +51,15 @@
         <textarea id="bulk-odds" placeholder="【入力例】&#10;1-2-3 150.5倍&#10;2-4-1 49&#10;単勝 7 4.5倍"></textarea>
         
         <p class="notice" id="save-notice">✔️ 入力内容は自動保存されています</p>
-        <button onclick="calculate()">一発計算 (抽出＆配分)</button>
+        <button class="calc-btn" onclick="calculate()">一発計算 (抽出＆配分)</button>
+
+        <div class="ad-box">
+            <p class="ad-copy">👇 次のレースまでの暇つぶしに</p>
+            <div class="dmm-btn">
+                <a href="https://px.a8.net/svt/ejp?a8mat=4AXFOH+C8KSFM+2GMK+ZQ80I" rel="nofollow">1冊115円のDMMコミックレンタル！</a>
+                <img border="0" width="1" height="1" src="https://www12.a8.net/0.gif?a8mat=4AXFOH+C8KSFM+2GMK+ZQ80I" alt="">
+            </div>
+        </div>
     </div>
 
     <div class="card" id="result-card" style="display:none;">
@@ -50,6 +69,13 @@
         </div>
         <table id="result-table">
             </table>
+
+        <div class="ad-box abema-banner" style="margin-top: 20px; border-color: #bee5eb; background: #f2f9fa;">
+            <p class="ad-copy" style="color: #0c5460;">📺 今すぐレース中継・ギャンブル番組を見るなら</p>
+            <a href="https://px.a8.net/svt/ejp?a8mat=4AXFOH+C7DX82+4EKC+62MDD" rel="nofollow">
+            <img border="0" width="600" height="94" alt="" src="https://www21.a8.net/svt/bgt?aid=260220833738&wid=001&eno=01&mid=s00000020550001020000&mc=1"></a>
+            <img border="0" width="1" height="1" src="https://www12.a8.net/0.gif?a8mat=4AXFOH+C7DX82+4EKC+62MDD" alt="">
+        </div>
     </div>
 
     <script>
@@ -77,26 +103,24 @@
             const lines = rawText.split('\n');
             
             lines.forEach(line => {
-                if (!line.trim()) return; // 空行は無視
+                if (!line.trim()) return;
 
-                // オッズを特定するための処理
-                let cleanLine = line.replace(/\d+(-\d+)+/g, ' '); // 馬番(1-2等)を一旦消す
+                let cleanLine = line.replace(/\d+(-\d+)+/g, ' ');
                 cleanLine = cleanLine.replace(/[\(\[\<]\d+[\)\]\>]/g, ' ');
                 const matches = cleanLine.match(/\d+(?:\.\d+)?/g);
                 
                 if (matches) {
-                    const oddsStr = matches[matches.length - 1]; // 一番後ろの数字をオッズとする
+                    const oddsStr = matches[matches.length - 1];
                     const extractedOdds = parseFloat(oddsStr);
                     
                     if(extractedOdds > 0) {
-                        // 元の行からオッズの文字列と「倍」などを取り除き、買い目名にする
                         let lastIndex = line.lastIndexOf(oddsStr);
                         let betName = line;
                         if (lastIndex !== -1) {
                             betName = line.substring(0, lastIndex) + line.substring(lastIndex + oddsStr.length);
                         }
                         betName = betName.replace(/倍/g, '').replace(/円/g, '').trim();
-                        if (!betName) betName = "指定なし"; // 数字しか入力されなかった場合
+                        if (!betName) betName = "指定なし";
 
                         betsList.push({ name: betName, odds: extractedOdds });
                     }
@@ -108,7 +132,6 @@
                 return;
             }
 
-            // オッズが高い順（または買い目順）に並べ替え可能ですが、今回はオッズの降順にします
             betsList.sort((a, b) => b.odds - a.odds);
             
             let sumInverse = 0;
