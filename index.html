@@ -3,11 +3,22 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>秒速・資金配分ツール [究極版]</title>
+    
+    <title>【無料】資金配分計算ツール｜競馬の3連単多点買い・コピペで一発最適化</title>
+    <meta name="description" content="netkeibaやJRAのオッズ表をそのままコピペするだけ！3連単フォーメーションなど買い目が多い時の資金配分を、どの目が来ても利益が同じになるよう一瞬で自動計算する完全無料のWebアプリです。">
+    
+    <meta property="og:title" content="【無料】秒速・資金配分計算ツール">
+    <meta property="og:description" content="オッズをコピペするだけで一発計算！発走3分前のパニックを救う神ツール">
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="https://pomesaku.github.io/BetBalance/">
+    <meta name="twitter:card" content="summary">
+
     <style>
         body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; background: #f4f7f6; color: #333; max-width: 600px; margin: 0 auto; padding: 20px; }
         h1 { font-size: 1.3rem; text-align: center; color: #d32f2f; margin-bottom: 5px;}
-        p.subtitle { text-align: center; font-size: 0.85rem; color: #666; margin-bottom: 20px; }
+        p.subtitle { text-align: center; font-size: 0.85rem; color: #666; margin-bottom: 10px; }
+        .bookmark-notice { text-align: center; font-size: 0.85rem; font-weight: bold; color: #0056b3; background: #e8f4fd; padding: 8px; border-radius: 4px; margin-bottom: 20px;}
+        
         .card { background: #fff; padding: 20px; border-radius: 8px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); margin-bottom: 20px;}
         label { font-weight: bold; font-size: 0.95rem; color: #444; display: block; margin-bottom: 5px;}
         input[type="number"] { width: 100%; padding: 12px; margin-bottom: 15px; border: 2px solid #ddd; border-radius: 6px; font-size: 18px; box-sizing: border-box; background: #fafafa; font-weight: bold;}
@@ -26,23 +37,27 @@
         .summary div { text-align: center; }
         .summary span { display: block; font-size: 1.3rem; font-weight: bold; color: #d32f2f; margin-top: 5px;}
         
-        /* --- 広告用のずるいCSS（修正版） --- */
+        /* 広告用CSS */
         .ad-box { margin-top: 25px; padding: 15px; background: #fdfbf2; border: 2px dashed #e6c86e; border-radius: 8px; text-align: center; }
         .ad-copy { font-size: 0.9rem; color: #947100; font-weight: bold; margin-top: 0; margin-bottom: 10px; }
-        
-        /* DMMテキストリンクを立体ボタン化する魔法 */
         .dmm-btn a { display: block; background: #ff9800; color: white; padding: 14px; border-radius: 6px; text-decoration: none; font-weight: bold; font-size: 1.1rem; box-shadow: 0 4px 0 #e65100; transition: 0.2s; }
         .dmm-btn a:active { transform: translateY(4px); box-shadow: none; }
+        .abema-banner { overflow: hidden; }
+        .abema-banner a { display: block; width: 100%; height: auto; }
+        .abema-banner img { max-width: 100%; height: auto !important; border-radius: 6px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); display: block; margin: 0 auto; }
         
-        /* ABEMAバナーをスマホ幅に自動調整＆クリックバグ修正 */
-        .abema-banner { overflow: hidden; } /* はみ出し防止 */
-        .abema-banner a { display: block; width: 100%; height: auto; } /* リンク領域を広げる */
-        .abema-banner img { max-width: 100%; height: auto !important; border-radius: 6px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); display: block; margin: 0 auto; } /* 画像の高さを自動調整し中央寄せ */
+        /* SEOテキスト用CSS */
+        .seo-text { max-width: 600px; margin: 40px auto; padding: 20px; color: #666; font-size: 0.85rem; border-top: 1px solid #ddd; line-height: 1.6;}
+        .seo-text h2 { font-size: 1rem; color: #444; margin-bottom: 10px;}
     </style>
 </head>
 <body>
     <h1>🔥 秒速・資金配分ツール</h1>
     <p class="subtitle">オッズをコピペするだけで一瞬で最適化</p>
+    
+    <div class="bookmark-notice">
+        ⭐ 毎週末すぐ使えるように、このページを「ブックマーク」しておいてください！
+    </div>
     
     <div class="card">
         <label>総予算 (円):</label>
@@ -78,6 +93,13 @@
             <img border="0" width="600" height="94" alt="" src="https://www21.a8.net/svt/bgt?aid=260220833738&wid=001&eno=01&mid=s00000020550001020000&mc=1"></a>
             <img border="0" width="1" height="1" src="https://www12.a8.net/0.gif?a8mat=4AXFOH+C7DX82+4EKC+62MDD" alt="">
         </div>
+    </div>
+
+    <div class="seo-text">
+        <h2>💡 このツールについて（3連単・フォーメーション対応）</h2>
+        <p>当サイトは、競馬における「多点買い」の資金配分を極限まで効率化する無料の資金計算機（トリガミ防止ツール）です。</p>
+        <p>特に3連単のフォーメーションや馬連の多点買いなど、買い目が30点〜60点を超える場合、発走直前にオッズを見ながら手動で予算を割り振るのは不可能です。本ツールなら、netkeibaやJRAの出馬表・オッズ画面をコピーして貼り付ける（コピペする）だけで、システムが自動でオッズを抽出し、指定した予算内で「どの買い目が的中しても、ほぼ同じ利益（払戻金）になる」ように100円単位で最適な購入額を瞬時に割り出します。</p>
+        <p>面倒なエクセル（Excel）での管理や、複雑な計算式は一切不要です。スマホブラウザでサクサク動くため、競馬場やWINSでの直前予想に最適です。</p>
     </div>
 
     <script>
